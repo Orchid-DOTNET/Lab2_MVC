@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MVC.Models;
 using System.Diagnostics;
 
@@ -9,19 +8,19 @@ namespace MVC.Controllers
     {
         public static List<Student> model = new List<Student>()
         {
-            new Student{Id = 40011, Name = "Narotsit Karki", Section = "A"},
+            new Student{Id = 60011, Name = "Vidit Pandey" , Section = "A"},
+        
+            new Student{Id = 60012, Name = "Subrat Regmi", Section = "A"},
 
-            new Student{Id = 40012, Name = "Subrat Regmi", Section = "A"},
+            new Student{Id = 60013, Name = "Supriya Basnet", Section = "A"},
 
-            new Student{Id = 40013, Name = "Ankit Rai", Section = "A"},
-
-            new Student{Id = 40014, Name = "Suman Khatiwada", Section = "B"},
-
-            new Student{Id = 40015, Name = "Madhu Ghimire", Section = "B"},
+            new Student{Id = 60014, Name = "Alyssa Karki", Section = "A"},
+            
+            new Student{Id = 60015, Name = "Pristha Shrestha", Section = "B"},
        };
 
     }
-    public class StudentController : Controller
+    public class StudentsController : Controller
     {
         public IActionResult Index()
         {
@@ -41,10 +40,15 @@ namespace MVC.Controllers
             return RedirectToAction("");
         }
 
+        public Student Single_data(Student student)
+        {
+            return Data.model.Single(s => s.Id == student.Id);
+        }
+
         [HttpPost]
         public IActionResult Edit_Student(Student stu)
         {
-            Student student = Data.model.Single(stud => stud.Id == stu.Id);
+            Student student = Single_data(stu);
             student.Name = stu.Name;
             student.Section = stu.Section;
             return RedirectToAction("");
@@ -71,3 +75,10 @@ namespace MVC.Controllers
 
     }
 }
+
+// clean Architectute
+/*
+Buisness Architecure , Entities of the application for Database in Domain Layer
+Buisness Logic of the Web Application in Application layer
+Infrastructure contains .dll files, cache servers, entity 
+*/
