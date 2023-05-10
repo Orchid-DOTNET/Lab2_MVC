@@ -3,11 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace MVC.Models
 {
+    // Our Student Model
     public class Student
     {
         [Key]
         public int Id { get; set; }
-        [NotNull,Required]
+        [NotNull]
         public string Name { get; set; }
         [NotNull]
         public string Section { get; set; }
