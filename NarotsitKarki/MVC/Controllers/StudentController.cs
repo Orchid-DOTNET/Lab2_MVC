@@ -1,89 +1,114 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MVC.Models;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Web;
+using AccessLayer;
+using MVC.Controllers;
 
 namespace MVC.Controllers
 {
-    // static Student model data
-    public class Data
+    public class StudentsController : Controller
     {
-        public static List<Student> model = new List<Student>()
+        private StudentDataAccessLayer sdal;
+        public StudentsController()
         {
-            new Student{Id = 40011, Name = "Narotsit Karki", Section = "A"},
-
-            new Student{Id = 40012, Name = "Subrat Regmi", Section = "A"},
-
-            new Student{Id = 40013, Name = "Ankit Rai", Section = "A"},
-
-            new Student{Id = 40014, Name = "Suman Khatiwada", Section = "B"},
-
-            new Student{Id = 40015, Name = "Madhu Ghimire", Section = "B"},
-       };
-
-    }
-    
-    public class StudentController : Controller
-    {
-        // /Student
-        // return student data list above to student view
+            sdal = new StudentDataAccessLayer();
+        }   
+        public void Create_Message(string msg, string msg_type)
+        {
+            TempData["Message"] = msg;
+            TempData["MType"] = msg_type;
+        }
         public IActionResult Index()
         {
-            var model = Data.model.OrderBy(stu => stu.Id);
+            var model = sdal.GetallStudents();
             return View(model);
         }
 
-       // /Student/Create
-       // a view for creating new student data
         public IActionResult Create()
         {
             return View();
         }
 
-        // /Student/Create_Student
-        // view to retreive data via "form" from "create" view above and store it in our student static data list
         [HttpPost]
         public IActionResult Create_Student(Student student)
         {
-            Data.model.Add(student);
-            // Redirects back to "/Student"
-            return RedirectToAction("");
+            if (ModelState.IsValid)
+            {
+                if (sdal.AddNewStudent(student))
+                {
+                    Create_Message("Student Data Added Successfully", "alert-success");
+                   return RedirectToAction("");
+                }
+            }
+            Create_Message("Student Data Creation Failed !!", "alert-danger");
+            return RedirectToAction("Create");  
         }
 
-        // /Student/Edit_Student
-        // view to retrive student information for a specific ID for editing and updating the current information of the particular student Id
-        [HttpPost]
-        public IActionResult Edit_Student(Student stu)
-        {   // retreiving the (single) student whose id stu.ID from the form match with our current static student list data
-            Student student = Data.model.Single(stud => stud.Id == stu.Id);
-            student.Name = stu.Name;
-            student.Section = stu.Section;
-            return RedirectToAction("");
-        }
-        // /Student/Edit/{int:Id}
-        // view for showing information to edit for a particular student ID
         public IActionResult Edit(int Id)
         {
-            Student model = Data.model.Single(stu => stu.Id == Id);
+
+            var students = sdal.GetallStudents();
+            Student model = students.Single(student => student.Id == Id);
             return View(model);
         }
-        // /Student/Delete/{int:ID}
-        // view to delete the information from the student static list for the id passed as an argument to the function
-        public IActionResult Delete(int Id)
-        {
-            Student delete_student = Data.model.Single(stu => stu.Id == Id);
-            Data.model.Remove(delete_student);
 
+        [HttpPost]
+        public IActionResult Edit_Student(Student stu)
+        {
+        if (ModelState.IsValid)
+        {
+            if (sdal.UpdateStudent(stu))
+
+            {
+                Create_Message("Student Data Updated Successfully", "alert-success");
+                return RedirectToAction("");
+            }
+            Create_Message("Student Data Update Failed !!", "alert-danger");
+        }
             return RedirectToAction("");
         }
-        
-        // /Student/Details/{int:Id}
-        // show detailed information for a particular student Id
+
+        public IActionResult Delete(int Id)
+        {
+            if (sdal.DeleteStudent(Id)) {
+                Create_Message("Student Data Deleted Successfully", "alert-success");
+                return RedirectToAction("");
+            }
+            Create_Message("Student Data Deletion Failed !!", "alert-danger");
+            return RedirectToAction("");
+        }
         public IActionResult Details(int Id)
         {
-            Student model = Data.model.Single(stu => stu.Id == Id);
+            var students = sdal.GetallStudents();
+            Student model = students.Single(student => student.Id == Id);
             return View(model);
         }
 
     }
+    
+    [ApiController]
+    [Route("api/student")]
+    public class  StudentAPIController: ControllerBase
+    {
+    private StudentDataAccessLayer sdal;    
+    public StudentAPIController()
+    {
+        sdal = new StudentDataAccessLayer();
+    }
+        public IEnumerable<Student> Get()
+        {
+            var model = sdal.GetallStudents();
+            return model;
+        }
+
+    }
 }
+
+// clean Architectute
+/*
+Buisness Architecure , Entities of the application for Database in Domain Layer
+Buisness Logic of the Web Application in Application layer
+Infrastructure contains .dll files, cache servers, entity 
+*/
